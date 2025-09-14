@@ -89,12 +89,12 @@ export default function KrishiLanding() {
               variants={fadeInUp}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12"
             >
-              <button onClick={()=>router.push("/image-query")} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 flex items-center gap-2">
+              <button onClick={()=>router.push("image-query")} className="border-2 border-green-400 text-green-400 hover:bg-green-400 hover:text-slate-900 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200">
+                Disease Identifier
+              </button>
+              <button onClick={()=>router.push("/assistant")} className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200 flex items-center gap-2">
                 <MessageCircle size={20} />
                 Ask Your Query
-              </button>
-              <button className="border-2 border-green-400 text-green-400 hover:bg-green-400 hover:text-slate-900 px-8 py-4 rounded-lg font-semibold text-lg transition-colors duration-200">
-                Learn More
               </button>
             </motion.div>
 
