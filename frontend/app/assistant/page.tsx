@@ -61,7 +61,6 @@ interface AIResponse {
   translation: string;
 }
 
-const GEMINI_API_KEY = "AIzaSyCd8_nQz2kiPB26jbZaiKutsrvrY4DdYxE";
 
 export default function AIAssistantDashboard() {
   const [messages, setMessages] = useState<Message[]>([
@@ -129,7 +128,7 @@ const generateAIResponse = async (userMessage: string): Promise<AIResponse> => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-goog-api-key": GEMINI_API_KEY,
+          "X-goog-api-key": process.env.NEXT_PUBLIC_GEMINI_API_KEY!,
         },
         body: JSON.stringify({
           contents: [
