@@ -6,6 +6,10 @@ import {
   Wind, Droplets, Eye, Compass, Clock, MapPin,
   AlertTriangle, TrendingUp
 } from "lucide-react";
+import { useLanguage } from "../LanguageContext";
+import { krishiAssistantTranslations } from "../translation";
+import LanguageDropdown from "../LanguageDropdown";
+import { useRouter } from "next/navigation";
 
 type MessageType = "ai" | "user";
 
@@ -63,15 +67,20 @@ interface AIResponse {
 
 
 export default function AIAssistantDashboard() {
+  const router=useRouter();
+  const { language } = useLanguage(); // en, ml, hi
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: 1,
-      type: "ai",
-      content: "നമസ്കാരം! ഞാൻ നിങ്ങളുടെ ഡിജിറ്റൽ കൃഷി ഓഫീസറാണ്. കൃഷിയെക്കുറിച്ച് എന്തെങ്കിലും സംശയങ്ങൾ ചോദിക്കൂ.",
-      translation:
-        "Hello! I am your Digital Krishi Officer. Feel free to ask me any farming-related questions.",
-      timestamp: new Date(Date.now() - 300000),
-    },
+  id: 1,
+  type: "ai",
+  content: 
+    language === "ml"
+      ? "നമസ്കാരം! ഞാൻ നിങ്ങളുടെ ഡിജിറ്റൽ കൃഷി ഓഫീസറാണ്. കൃഷിയെക്കുറിച്ച് എന്തെങ്കിലും സംശയങ്ങൾ ചോദിക്കൂ."
+      : language === "hi"
+      ? "नमस्ते! मैं आपका डिजिटल कृषि अधिकारी हूँ। कृपया खेती से संबंधित कोई भी सवाल पूछें।"
+      : "Hello! I am your Digital Krishi Officer. Feel free to ask me any farming-related questions.",
+  timestamp: new Date(Date.now() - 300000),
+},
   ]);
   const [currentMessage, setCurrentMessage] = useState<string>("");
   const [isRecording, setIsRecording] = useState<boolean>(false);
@@ -79,6 +88,7 @@ export default function AIAssistantDashboard() {
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
+  const t = krishiAssistantTranslations[language];
 
   // ✅ Weather API integration
   useEffect(() => {
@@ -136,9 +146,10 @@ const generateAIResponse = async (userMessage: string): Promise<AIResponse> => {
               parts: [
                 {
                   text: `
-Answer the following farming question. 
-1. First give the answer in Malayalam. 
-2. Then give English translation, separated by "---".
+You are my farmer assistant.
+Answer the following farming question in ${language === "ml" ? "Malayalam" : language === "hi" ? "Hindi" : "English"}.
+do not answer except agriculture related questions.
+
 
 Question: ${userMessage}
                   `.trim(),
@@ -264,7 +275,7 @@ Question: ${userMessage}
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center gap-4">
-              <button className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-500/10">
+              <button onClick={()=>router.push("/")} className="text-green-400 hover:text-green-300 transition-colors p-2 rounded-lg hover:bg-green-500/10">
                 <ArrowLeft size={24} />
               </button>
               <div className="flex items-center gap-3">
@@ -272,8 +283,8 @@ Question: ${userMessage}
                   <Bot className="text-green-400" size={24} />
                 </div>
                 <div>
-                  <h1 className="text-xl font-bold text-white">AI Krishi Assistant</h1>
-                  <p className="text-sm text-slate-300">Online • Weather-Aware</p>
+                  <h1 className="text-xl font-bold text-white">{t.pageTitle}</h1>
+                  <p className="text-sm text-slate-300">{t.pageSubtitle}</p>
                 </div>
               </div>
             </div>
@@ -282,9 +293,12 @@ Question: ${userMessage}
               <div className="flex items-center gap-2 bg-slate-800/50 px-4 py-2 rounded-lg">
                 <MapPin className="text-green-400" size={16} />
                 <span className="text-white text-sm">{weatherData.location}</span>
+                <div className="ml-2">
+                    <LanguageDropdown/>
+                </div>
               </div>
             ) : (
-              <span className="text-slate-400 text-sm">Loading weather...</span>
+              <span className="text-slate-400 text-sm">{t.loadingWeather}</span>
             )}
           </motion.div>
         </div>
@@ -302,7 +316,7 @@ Question: ${userMessage}
                 {/* Current Weather */}
                 <div className="bg-slate-800/50 rounded-xl p-4 mb-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-white">Current Weather</h3>
+                    <h3 className="text-lg font-semibold text-white">{t.currentWeather}</h3>
                     <Clock className="text-slate-400" size={16} />
                   </div>
 
@@ -312,39 +326,27 @@ Question: ${userMessage}
                       <div className="text-3xl font-bold text-white">
                         {weatherData.current.temperature}°C
                       </div>
-                      <div className="text-sm text-slate-300">
-                        {weatherData.current.condition}
-                      </div>
-                      <div className="text-xs text-slate-400">
-                        {weatherData.current.malayalam}
-                      </div>
+                      <div className="text-sm text-slate-300">{weatherData.current.condition}</div>
+                      <div className="text-xs text-slate-400">{weatherData.current.malayalam}</div>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <Droplets className="text-blue-400" size={16} />
-                      <span className="text-slate-300">
-                        {weatherData.current.humidity}%
-                      </span>
+                      <span className="text-slate-300">{weatherData.current.humidity}%</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Wind className="text-slate-400" size={16} />
-                      <span className="text-slate-300">
-                        {weatherData.current.windSpeed} km/h
-                      </span>
+                      <span className="text-slate-300">{weatherData.current.windSpeed} km/h</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Eye className="text-slate-400" size={16} />
-                      <span className="text-slate-300">
-                        {weatherData.current.visibility} km
-                      </span>
+                      <span className="text-slate-300">{weatherData.current.visibility} km</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Compass className="text-slate-400" size={16} />
-                      <span className="text-slate-300">
-                        {weatherData.current.windDirection}
-                      </span>
+                      <span className="text-slate-300">{weatherData.current.windDirection}</span>
                     </div>
                   </div>
                 </div>
@@ -368,33 +370,20 @@ Question: ${userMessage}
                 {/* Forecast */}
                 {weatherData.forecast.length > 0 && (
                   <div className="bg-slate-800/50 rounded-xl p-4">
-                    <h3 className="text-lg font-semibold text-white mb-4">
-                      4-Day Forecast
-                    </h3>
+                    <h3 className="text-lg font-semibold text-white mb-4">{t.fourDayForecast}</h3>
                     <div className="space-y-3">
                       {weatherData.forecast.map((day, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center justify-between py-2"
-                        >
+                        <div key={i} className="flex items-center justify-between py-2">
                           <div className="flex items-center gap-3">
                             {getWeatherIcon(day.condition)}
                             <div>
-                              <div className="text-sm font-medium text-white">
-                                {day.day}
-                              </div>
-                              <div className="text-xs text-slate-400">
-                                {day.condition}
-                              </div>
+                              <div className="text-sm font-medium text-white">{day.day}</div>
+                              <div className="text-xs text-slate-400">{day.condition}</div>
                             </div>
                           </div>
                           <div className="text-right">
-                            <div className="text-sm text-white">
-                              {day.high}°/{day.low}°
-                            </div>
-                            <div className="text-xs text-blue-400">
-                              {day.rain}% rain
-                            </div>
+                            <div className="text-sm text-white">{day.high}°/{day.low}°</div>
+                            <div className="text-xs text-blue-400">{day.rain}% rain</div>
                           </div>
                         </div>
                       ))}
@@ -406,12 +395,12 @@ Question: ${userMessage}
                 <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 mt-4">
                   <div className="flex items-center gap-2 mb-3">
                     <TrendingUp className="text-green-400" size={16} />
-                    <h4 className="font-semibold text-green-400">Weather Tips</h4>
+                    <h4 className="font-semibold text-green-400">{t.weatherTipsTitle}</h4>
                   </div>
                   <ul className="text-sm text-slate-300 space-y-1">
-                    <li>• High humidity - watch for fungal diseases</li>
-                    <li>• മഴയ്ക്ക് മുമ്പ് വയൽ തയ്യാറാക്കുക</li>
-                    <li>• Good temperature for crop growth</li>
+                    <li>• {t.tip1}</li>
+                    <li>• {t.tip2}</li>
+                    <li>• {t.tip3}</li>
                   </ul>
                 </div>
               </>
@@ -428,15 +417,9 @@ Question: ${userMessage}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
-                    className={`flex ${
-                      message.type === "user" ? "justify-end" : "justify-start"
-                    }`}
+                    className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
                   >
-                    <div
-                      className={`max-w-xl flex gap-3 ${
-                        message.type === "user" ? "flex-row-reverse" : ""
-                      }`}
-                    >
+                    <div className={`max-w-xl flex gap-3 ${message.type === "user" ? "flex-row-reverse" : ""}`}>
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                           message.type === "user"
@@ -460,9 +443,7 @@ Question: ${userMessage}
                             {message.translation}
                           </div>
                         )}
-                        <div className="text-xs opacity-50 mt-2">
-                          {formatTime(message.timestamp)}
-                        </div>
+                        <div className="text-xs opacity-50 mt-2">{formatTime(message.timestamp)}</div>
                       </div>
                     </div>
                   </motion.div>
@@ -470,11 +451,7 @@ Question: ${userMessage}
               </AnimatePresence>
 
               {isTyping && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex justify-start"
-                >
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
                   <div className="flex gap-3 max-w-xl">
                     <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center">
                       <Bot size={20} />
@@ -482,14 +459,8 @@ Question: ${userMessage}
                     <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-4 border border-slate-700">
                       <div className="flex space-x-1">
                         <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                        <div
-                          className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
-                          style={{ animationDelay: "0.1s" }}
-                        ></div>
-                        <div
-                          className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
-                          style={{ animationDelay: "0.2s" }}
-                        ></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0.1s" }}></div>
+                        <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: "0.2s" }}></div>
                       </div>
                     </div>
                   </div>
@@ -507,30 +478,28 @@ Question: ${userMessage}
                     value={currentMessage}
                     onChange={(e) => setCurrentMessage(e.target.value)}
                     onKeyPress={handleKeyPress}
-                    placeholder="മലയാളത്തിലോ ഇംഗ്ലീഷിലോ ചോദിക്കാം... (Ask in Malayalam or English...)"
+                    placeholder={t.placeholder}
                     className="w-full bg-slate-800/50 border border-slate-600 rounded-xl p-4 text-white placeholder-slate-400 resize-none focus:outline-none focus:border-green-500 min-h-[60px] max-h-32"
                   />
 
                   <div className="flex gap-2 mt-2 flex-wrap">
                     <button
-                      onClick={() =>
-                        setCurrentMessage("നെല്ല് കൃഷിക്ക് എന്താണ് നല്ല കാലാവസ്ഥ?")
-                      }
+                      onClick={() => setCurrentMessage(t.suggested1)}
                       className="text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded-full transition-colors"
                     >
-                      Rice farming weather
+                      {t.suggested1}
                     </button>
                     <button
-                      onClick={() => setCurrentMessage("മഴയ്ക്ക് മുമ്പ് എന്ത് ചെയ്യണം?")}
+                      onClick={() => setCurrentMessage(t.suggested2)}
                       className="text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded-full transition-colors"
                     >
-                      Pre-rain care
+                      {t.suggested2}
                     </button>
                     <button
-                      onClick={() => setCurrentMessage("കീടനാശിനി എപ്പോൾ തളിക്കണം?")}
+                      onClick={() => setCurrentMessage(t.suggested3)}
                       className="text-xs bg-slate-700/50 hover:bg-slate-700 text-slate-300 px-3 py-1 rounded-full transition-colors"
                     >
-                      Pesticide timing
+                      {t.suggested3}
                     </button>
                   </div>
                 </div>
@@ -539,9 +508,7 @@ Question: ${userMessage}
                   <button
                     onClick={toggleRecording}
                     className={`p-3 rounded-xl transition-colors ${
-                      isRecording
-                        ? "bg-red-500 hover:bg-red-600 text-white"
-                        : "bg-slate-700 hover:bg-slate-600 text-slate-300"
+                      isRecording ? "bg-red-500 hover:bg-red-600 text-white" : "bg-slate-700 hover:bg-slate-600 text-slate-300"
                     }`}
                   >
                     {isRecording ? <MicOff size={20} /> : <Mic size={20} />}
@@ -559,7 +526,7 @@ Question: ${userMessage}
             </div>
           </div>
         </div>
-      </div> 
+      </div>
     </div>
   );
 }

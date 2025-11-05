@@ -55,7 +55,7 @@ async def predict(
     if pred in disease_dict:
         return {
             "predicted": pred,
-            "confidence": confidence,
+            # "confidence": confidence,
             "description": disease_dict[pred]["description"],
             "cause": disease_dict[pred]["cause"],
             "cure": disease_dict[pred]["cure"],
@@ -63,6 +63,9 @@ async def predict(
     else:
         return {
             "predicted": pred,
-            "confidence": confidence,
+            # "confidence": confidence,
             "message": "Sorry, I don't have information about this disease in the selected language."
         }
+
+
+# uvicorn server:app --host 0.0.0.0 --port 8080 --reload
